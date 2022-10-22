@@ -28,13 +28,10 @@ class GoogleMapas(scrapy.Spider):
         #Iniciamos el webdriver
         options = webdriver.firefox.options.Options()
         options.headless = False  #True para no abrir el navegador   
-        
         ''' Direccion de Firefox.exe, si se actualiza cambia el nombre de la carpeta'''
         options.binary_location= r'C:\Program Files\WindowsApps\Mozilla.Firefox_105.0.3.0_x64__n80bbvh6b1yt2\VFS\ProgramFiles\Firefox Package Root\firefox.exe' 
-        
         '''Direccion del geckodriver de firefox'''
         driver = webdriver.Firefox(executable_path=r'C:\Users\mauiv\Documents\geckodriver.exe', options=options) 
-        
         '''Direccion de la carpeta donde se guardan los datos'''
         data=pd.read_csv(r'C:\Users\mauiv\Documents\Gmaps\Gmaps\spiders\Final_Data_Hackathon_2022.csv') #Leemos el archivo csv 
         empresasxbuscar=[]
@@ -81,7 +78,7 @@ class GoogleMapas(scrapy.Spider):
                 movimiento.send_keys(Keys.DOWN).perform()
     
             if (len(driver.find_elements(By.CSS_SELECTOR, "span.rh7Scc.LaAyid.M5ziBd"))>0):    
-                for i in range(2):
+                for i in range(3):
                     movimiento.send_keys(Keys.DOWN).perform()
             horas = "" 
 
@@ -95,11 +92,12 @@ class GoogleMapas(scrapy.Spider):
                 for l in range(len(aux3)): 
                     horas += aux3[(l+k)%7].text + " " + driver.find_elements(By.XPATH, "//tr[@class='y0skZc']/td[2]")[(l+k)%7].text + ","
                 driver.find_element(By.CSS_SELECTOR, "span.rh7Scc.LaAyid.u1oM6").click()
-                time.sleep(.2)
+                time.sleep(.1)
             except:
                 pass
-            for i in range(3):
+            for i in range(2):
                 movimiento.send_keys(Keys.DOWN).perform()
+                time.sleep(.01)
 
             #Asiganmos los datos a las variables
             GITEM = GmapsItem()
@@ -138,58 +136,59 @@ class GoogleMapas(scrapy.Spider):
                 imagenes.pop(0)
 
             for i in range (len(imagenes)):
-                
-                if(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/place_gm_blue_24dp.png"):
-                    GITEM["direccion"]= driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
-                    movimiento.send_keys(Keys.DOWN).perform()
-                elif(imagenes[i]=="https://www.google.com/images/cleardot.gif"):
-                    GITEM["nota_direccion"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
-                elif(imagenes[i]=="https://fonts.gstatic.com/s/i/googlematerialicons/event/v14/gm_blue-24dp/1x/gm_event_gm_blue_24dp.png"):
-                    try:
-                        GITEM["Buscar_Mesa_URL"]= driver.find_element(By.XPATH, "//a[@data-value='Abrir el vínculo de reserva']").get_attribute('href')
-                    except:
-                        driver.find_element(By.XPATH, "//button[@data-tooltip='Abrir el vínculo de reserva']").click()
-                        WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, "//div[@class='RcCsl fVHpi rXaZJb AG25L']/a[@class='CsEnBe']")))
-                        GITEM["Buscar_Mesa_URL"]= [driver.find_elements(By.XPATH, "//a[@class='CsEnBe']")[0].get_attribute('href'), driver.find_elements(By.XPATH, "//a[@class='CsEnBe']")[1].get_attribute('href')]
-                        time.sleep(.2)
-                        driver.find_element(By.XPATH, "//button[@class='AmPKde']").click()
+                try:
+                    if(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/place_gm_blue_24dp.png"):
+                        GITEM["direccion"]= driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
+                        movimiento.send_keys(Keys.DOWN).perform()
+                    elif(imagenes[i]=="https://www.google.com/images/cleardot.gif"):
+                        GITEM["nota_direccion"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
+                    elif(imagenes[i]=="https://fonts.gstatic.com/s/i/googlematerialicons/event/v14/gm_blue-24dp/1x/gm_event_gm_blue_24dp.png"):
+                        try:
+                            GITEM["Buscar_Mesa_URL"]= driver.find_element(By.XPATH, "//a[@data-value='Abrir el vínculo de reserva']").get_attribute('href')
+                        except:
+                            driver.find_element(By.XPATH, "//button[@data-tooltip='Abrir el vínculo de reserva']").click()
+                            WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, "//div[@class='RcCsl fVHpi rXaZJb AG25L']/a[@class='CsEnBe']")))
+                            GITEM["Buscar_Mesa_URL"]= [driver.find_elements(By.XPATH, "//a[@class='CsEnBe']")[0].get_attribute('href'), driver.find_elements(By.XPATH, "//a[@class='CsEnBe']")[1].get_attribute('href')]
+                            time.sleep(.2)
+                            driver.find_element(By.XPATH, "//button[@class='AmPKde']").click()
 
-                elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/public_gm_blue_24dp.png"):
-                    try: 
-                        GITEM["website"] =driver.find_element(By.XPATH, "//a[@data-tooltip='Abrir el sitio web']").get_attribute('href')
-                    except:
-                        GITEM["website"] ="www." + driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
-                elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/phone_gm_blue_24dp.png"):
-                    GITEM["telefono"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
-                elif(imagenes[i]=="https://maps.gstatic.com/mapfiles/maps_lite/images/2x/ic_plus_code.png"):
-                    GITEM["plus_code"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
-                elif(imagenes[i]=="https://maps.gstatic.com/consumer/images/icons/1x/send_to_mobile_alt_gm_blue_24dp.png"):
-                    #Enviar a celular
+                    elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/public_gm_blue_24dp.png"):
+                        try: 
+                            GITEM["website"] =driver.find_element(By.XPATH, "//a[@data-tooltip='Abrir el sitio web']").get_attribute('href')
+                        except:
+                            GITEM["website"] ="www." + driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
+                    elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/phone_gm_blue_24dp.png"):
+                        GITEM["telefono"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
+                    elif(imagenes[i]=="https://maps.gstatic.com/mapfiles/maps_lite/images/2x/ic_plus_code.png"):
+                        GITEM["plus_code"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
+                    elif(imagenes[i]=="https://maps.gstatic.com/consumer/images/icons/1x/send_to_mobile_alt_gm_blue_24dp.png"):
+                        #Enviar a celular
+                        pass
+                    elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/local_shipping_gm_blue_24dp.png"):
+                        try:
+                            GITEM["delivery_url"] = driver.find_element(By.XPATH, "//a[@data-value='Haz un pedido']").get_attribute('href')
+                        except:
+                            driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].click()
+                            WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, "//span[@class='BgrMEd i7qH3c cYlvTc']")))
+                            GITEM["delivery_url"]= driver.find_element(By.XPATH, "//a[@class='CsEnBe']").get_attribute('href') + ", " + driver.find_elements(By.XPATH, "//a[@class='CsEnBe']")[1].get_attribute('href')
+                            time.sleep(.2)
+                            driver.find_element(By.XPATH, "//button[@class='AmPKde']").click()
+
+                    elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/restaurant_menu_gm_blue_24dp.png"):
+                        GITEM["menu"] = driver.find_element(By.XPATH, "//a[@data-item-id='menu']").get_attribute('href')
+                    elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/verified_user_gm_blue_24dp.png"):
+                        GITEM["negocio_reclamado"] = False
+                    else:
+
+                        GITEM["Otras"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
+                except:
                     pass
-                elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/local_shipping_gm_blue_24dp.png"):
-                    try:
-                        GITEM["delivery_url"] = driver.find_element(By.XPATH, "//a[@data-value='Haz un pedido']").get_attribute('href')
-                    except:
-                        driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].click()
-                        WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, "//span[@class='BgrMEd i7qH3c cYlvTc']")))
-                        GITEM["delivery_url"]= driver.find_element(By.XPATH, "//a[@class='CsEnBe']").get_attribute('href') + ", " + driver.find_elements(By.XPATH, "//a[@class='CsEnBe']")[1].get_attribute('href')
-                        time.sleep(.2)
-                        driver.find_element(By.XPATH, "//button[@class='AmPKde']").click()
-
-                elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/restaurant_menu_gm_blue_24dp.png"):
-                    GITEM["menu"] = driver.find_element(By.XPATH, "//a[@data-item-id='menu']").get_attribute('href')
-                elif(imagenes[i]=="https://www.gstatic.com/images/icons/material/system_gm/1x/verified_user_gm_blue_24dp.png"):
-                    GITEM["negocio_reclamado"] = False
-                else:
-
-                    GITEM["Otras"] = driver.find_elements(By.XPATH, "//div[@class='Io6YTe fontBodyMedium']")[i].text
-            GITEM["scrap_sel"]="Selenium"
             
             
             #click a las opiniones si hay
             if len(driver.find_elements(By.XPATH, "//button[@class='DkEaL']"))>0 and len(lista)>0:
                 webdriver.ActionChains(driver).send_keys(Keys.HOME).perform()
-                time.sleep(.4)
+                time.sleep(.3)
                 driver.find_elements(By.CSS_SELECTOR, "button.DkEaL")[0].click()
                 while driver.execute_script("return document.readyState") != "complete":
                     time.sleep(.5)
@@ -205,7 +204,7 @@ class GoogleMapas(scrapy.Spider):
                     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[@data-value='Ordenar']")))
                     webdriver.ActionChains(driver).move_to_element(driver.find_element(By.XPATH, "//button[@data-value='Ordenar']")).click().perform()
                     #funcion que espera en un lugar hasta que se cargue el elemento
-                    segs_max=2.5
+                    segs_max=3
                     for i in range(segs_max*40):
                         webdriver.ActionChains(driver).move_to_element(driver.find_element(By.XPATH, "//button[@data-value='Ordenar']")).perform()
                         if(len(driver.find_elements(By.XPATH, "//li[@class='fxNQSd'][2]"))>0):
@@ -222,32 +221,37 @@ class GoogleMapas(scrapy.Spider):
                     time.sleep(1.5)
                 except:
                     pass
-
-                #Para que cargue to2 los comentarios
-                driver.find_element(By.CSS_SELECTOR, "button.oGrB9e").click()
-                aux=0
-                webdriver.ActionChains(driver).send_keys(Keys.END).perform()
-                time.sleep(.3)
-                webdriver.ActionChains(driver).send_keys(Keys.END).perform()
-
-                #para cargar los comentarios de hasta abajo    
-                while(len(driver.find_elements(By.XPATH,"//div[@class='DU9Pgb']/span[3]")) != aux and len(driver.find_elements(By.XPATH,"//div[@class='DU9Pgb']/span[3]")) < 30):
-                    aux = len(driver.find_elements(By.XPATH,"//div[@class='DU9Pgb']/span[3]"))
-                    webdriver.ActionChains(driver).send_keys(Keys.END).perform()
-                    time.sleep(.1)
+                try:
+                    #Para que cargue to2 los comentarios
                     driver.find_element(By.CSS_SELECTOR, "button.oGrB9e").click()
-                    time.sleep(.2)
+                    aux=0
+                    webdriver.ActionChains(driver).send_keys(Keys.END).perform()
+                    time.sleep(.3)
+                    webdriver.ActionChains(driver).send_keys(Keys.END).perform()
 
-                #dar click para ver toda la opinión
-                aux2=len(driver.find_elements(By.XPATH, "//button[@class='w8nwRe kyuRq']"))
-                while(aux2>0):
-                    driver.find_element(By.XPATH, "//button[@class='w8nwRe kyuRq']").click()
-                    aux2=aux2-1
-                    time.sleep(.1)
+                    #para cargar los comentarios de hasta abajo    
+                    while(len(driver.find_elements(By.XPATH,"//div[@class='DU9Pgb']/span[3]")) != aux and len(driver.find_elements(By.XPATH,"//div[@class='DU9Pgb']/span[3]")) < 40):
+                        aux = len(driver.find_elements(By.XPATH,"//div[@class='DU9Pgb']/span[3]"))
+                        webdriver.ActionChains(driver).send_keys(Keys.END).perform()
+                        time.sleep(.1)
+                        driver.find_element(By.CSS_SELECTOR, "button.oGrB9e").click()
+                        time.sleep(.2)
+
+                    #dar click para ver toda la opinión
+                    aux2=len(driver.find_elements(By.XPATH, "//button[@class='w8nwRe kyuRq']"))
+                    while(aux2>0):
+                        driver.find_element(By.XPATH, "//button[@class='w8nwRe kyuRq']").click()
+                        aux2=aux2-1
+                        time.sleep(.1)
+                except:
+                    pass
                 GITEM["opiniones"]=[]
                 #Esta parte no falla
                 for k in range(len(driver.find_elements(By.XPATH, "//div[@class='MyEned']/span[2]"))):          #estrellas                                                                                                                                                  hace cuanto se escribio la opinion                                          opinion         
-                    GITEM["opiniones"].append( str(k) + "-:-" + driver.find_elements(By.XPATH, "//div[@class='DU9Pgb']/span[2]")[k].get_attribute("aria-label").replace(" ", "").replace("\xa0estrellas", "").replace(" estrella", "") + "-:-"+ driver.find_elements(By.XPATH, "//div[@class='DU9Pgb']/span[3]")[k].text + "-:-" + driver.find_elements(By.XPATH, "//div[@class='MyEned']/span[2]")[k].text.replace(",", " ") )
+                    try:
+                        GITEM["opiniones"].append( str(k) + "-:-" + driver.find_elements(By.XPATH, "//div[@class='DU9Pgb']/span[2]")[k].get_attribute("aria-label").replace(" ", "").replace("\xa0estrellas", "").replace(" estrella", "") + "-:-"+ driver.find_elements(By.XPATH, "//div[@class='DU9Pgb']/span[3]")[k].text + "-:-" + driver.find_elements(By.XPATH, "//div[@class='MyEned']/span[2]")[k].text.replace(",", " ") )
+                    except:
+                        pass
             else:
                 pass
             yield GITEM    

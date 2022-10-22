@@ -31,6 +31,5 @@ class GmapsItem(scrapy.Item):
     opiniones_palabras = scrapy.Field()
     Otras= scrapy.Field()
     index = scrapy.Field()
-    scrap_sel = scrapy.Field()
     opiniones = scrapy.Field()
     pass
