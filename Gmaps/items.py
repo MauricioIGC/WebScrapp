@@ -32,4 +32,32 @@ class GmapsItem(scrapy.Item):
     Otras= scrapy.Field()
     index = scrapy.Field()
     opiniones = scrapy.Field()
+
+    pass
+
+    #Exclusivos del inegi
+class INEGItem(scrapy.Item):
+    CLEE = scrapy.Field()
+    Id = scrapy.Field()
+    Nombre = scrapy.Field()
+    Razon_social = scrapy.Field()
+    Clase_actividad = scrapy.Field()
+    Estrato = scrapy.Field()
+    Tipo_vialidad = scrapy.Field()
+    Calle = scrapy.Field()
+    Num_Exterior = scrapy.Field()
+    Num_Interior = scrapy.Field()
+    Colonia = scrapy.Field()
+    CP = scrapy.Field()
+    Ubicacion = scrapy.Field()
+    Telefono = scrapy.Field()
+    Correo_e = scrapy.Field()
+    Sitio_internet = scrapy.Field()
+    Tipo = scrapy.Field()
+    Longitud = scrapy.Field()
+    Latitud = scrapy.Field()
+    tipo_corredor_industrial = scrapy.Field()
+    nom_corredor_industrial = scrapy.Field()
+    numero_local = scrapy.Field()
+
     pass
